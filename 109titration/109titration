@@ -1,0 +1,127 @@
+#!/usr/bin/env python3
+
+import sys
+import math
+import csv
+import argparse
+
+parser = argparse.ArgumentParser(description = 'aa')
+parser.add_argument("file", type = str)
+
+try:
+    args = parser.parse_args()
+except:
+    print ("error")
+    exit(84)
+
+len_str = len(args.file) - 1
+
+if (len_str < 3):
+    exit(84)
+
+if (args.file[len_str] != 'v' or args.file[len_str - 1] != 's' or args.file[len_str - 2] != 'c' or args.file[len_str - 3] != '.'):
+    exit(84)
+
+def display_help():
+    if len(sys.argv) == 2:
+        if sys.argv[1] == '-h':
+            print("USAGE")
+            print("\t./109titration file\n")
+            print("DESCRIPTION")
+            print("\tfile\ta csv file containing \"volume;ph\" lines")
+            sys.exit(0)
+    else:
+        sys.exit(84)
+
+def project():
+
+    try:
+        opening = open(sys.argv[1], "r")
+        if (opening.mode == "r"):
+            a = opening.read()
+
+    except IOError:
+        sys.exit(84)
+    z = a.split("\n")
+    a = []
+    for c in range(0, len(z)):
+        a.append(z[c].split(";"))
+    volume = []
+    ph = []
+    for c in range(0, len(a)):
+        if (len(a[c]) == 2):
+            volume.append(float(a[c][0]))
+            ph.append(float(a[c][1]))
+
+    der = []
+    for c in range(1, len(volume) - 1):
+        der.append((float(ph[c + 1]) - float(ph[c - 1])) / (float(volume[c + 1]) - float(volume[c - 1])))
+    print("Derivative:")
+
+    for c in range(1, len(der) + 1):
+        if ((round(volume[c])) == volume[c]):
+            print("%i ml -> %.2f"%(volume[c], der[c - 1]))
+        else:
+            print("%.1f ml -> %.2f"%(volume[c], der[c - 1]))
+
+    point = float(0)
+    index = 0
+    for c in range (0, len(der)):
+        if (der[c] > point):
+            point = volume[c + 1]
+            index = c + 1
+
+    if ((round(point)) == point):
+        print("\nEquivalent point at %i ml"%(point))
+    else:
+        print("\nEquivalent point at %.1f ml"%(point))
+    second_der = []
+
+    for c in range(1, len(der) - 1):
+        second_der.append((float(der[c + 1]) - float(der[c - 1])) / (float(volume[c + 2]) - float(volume[c])))
+    print("\nSecond derivative:")
+
+    for c in range(1, len(second_der) + 1):
+        if ((round(volume[c+1])) == volume[c + 1]):
+            print("%i ml -> %.2f"%(volume[c + 1], second_der[c - 1]))
+        else:
+            print("%.1f ml -> %.2f"%(volume[c + 1], second_der[c - 1]))
+
+    new_volume = []
+    der_estimated = []
+    for c in range(index - 1, index + 1):
+        a = float((float(volume[c + 1]) - float(volume[c])) * 10)
+        b = float((float(second_der[c - 1]) - float(second_der[c - 2])) / a)
+
+        for e in range(0, int(a)):
+            new_volume.append(float(volume[c]) + 0.1 * float(e))
+            der_estimated.append(float(second_der[c - 2]) + b * float(e))
+    print("\nSecond derivative estimated:")
+
+    for c in range(0, len(der_estimated)):
+        if ((round(new_volume[c])) == new_volume[c]):
+            print("%i ml -> %.2f"%(new_volume[c], der_estimated[c]))
+        else:
+            print("%.1f ml -> %.2f"%(new_volume[c], der_estimated[c]))
+
+    if ((round(volume[index + 1])) == volume[index + 1]):
+        print("%i ml -> %.2f"%(volume[index + 1], second_der[index-1]))
+    else:
+        print("%.1f ml -> %.2f"%(new_volume[index + 1], second_der[index-1]))
+
+    keep_volume = float(1000000)
+    keep = float(1000000)
+
+    for c in range(0, len(der_estimated)):
+        if (abs(der_estimated[c]) < abs(keep)):
+            keep = abs(der_estimated[c])
+            keep_volume = float(new_volume[c])
+
+    if ((round(keep_volume)) == keep_volume):
+        print("\nEquivalent point at %i ml"%(keep_volume))
+    else:
+        print("\nEquivalent point at %.1f ml"%(keep_volume))
+
+if __name__ == "__main__":
+    display_help()
+    project()

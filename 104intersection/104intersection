@@ -1,0 +1,89 @@
+#!/usr/bin/python3
+
+import sys
+import math
+import os
+
+def helper():
+    print("USAGE")
+    print("\t./104intersection opt xp yp zp xv yv zv p")
+    print("DESCRIPTION")
+    print("\topt\t\tsurface option: 1 for a sphere, 2 for a cylinder, 3 for a cone")
+    print("\t(xp, yp, zp)\tcoordinates of a point by which the light ray passes through")
+    print("\t(xv, yv, zv)\tcoordinates of a vector parallel to the light ray")
+    print("\tp\t\tparameter: radius of the sphere, radius of the cylinder, or\n\t\t\tangle formed by the cone and the Z-axis")
+
+def cylinder_function():
+    print("Cylinder of radius " + str(ray))
+    print("Line passing through the point ("+str(Xp)+", "+str(Yp)+", "+str(Zp)+") and parallel to the vector ("+str(Xv)+", "+str(Yv)+", "+str(Zv)+")")
+    
+    x = Xv**2 + Yv**2
+    
+    y = 2 * (Xp * Xv + Yp * Yv)
+    
+    z = Xp**2 + Yp**2 - ray**2
+
+    return (x, y, z)
+
+def sphere_function():
+    print("Sphere of radius " + str(ray))
+    print("Line passing through the point ("+str(Xp)+", "+ str(Yp)+", "+str(Zp)+") and parallel to the vector ("+str(Xv)+", "+str(Yv)+", "+str(Zv)+")")
+
+    x = (Xv**2 + Yv**2 + Zv**2)
+    
+    y = 2 * (Xv * Xp + Yv * Yp + Zv * Zp)
+    
+    z = Xp**2 + Yp**2 + Zp**2 - ray**2
+
+    return(x, y, z)
+
+def cone_fuction():
+    print("Cone with a " + str(ray) + " degree angle")
+    print("Line passing through the point ("+str(Xp)+", "+str(Yp)+", "+str(Zp)+") and parallel to the vector ("+str(Xv)+", "+str(Yv)+", "+str(Zv)+")")
+
+    x = (Xv**2 + Yv**2) - (Zv**2 *math.tan(math.radians(ray))**2)
+    
+    y = 2 * ((Xv * Xp) + (Yv * Yp)) - (2*(Zv * Zp) * math.tan(math.radians(ray))**2)
+    
+    z = ((Xp**2 + Yp**2) - ((Zp**2) * math.tan(math.radians(ray))**2))
+
+    return (x, y, z)
+
+if len(sys.argv) == 2 and sys.argv[1] == "-h":
+    helper()
+    os._exit(os.EX_OK)
+    
+if len(sys.argv) == 1:
+    print("error: no parameters", file=sys.stderr)
+    exit(84)
+
+try:
+    object = int(sys.argv[1])
+    Xp = int(sys.argv[2])
+    Yp = int(sys.argv[3])
+    Zp = int(sys.argv[4])
+    Xv = int(sys.argv[5])
+    Yv = int(sys.argv[6])
+    Zv = int(sys.argv[7])
+    ray = int(sys.argv[8])
+except ValueError:
+    exit(84)
+
+if object == 1 :
+    x, y, z = sphere_function()
+
+elif object == 3:
+	x, y, z = cone_fuction()
+
+elif object == 2:
+    x, y, z = cylinder_function()
+
+delta = y ** 2 - 4 * x * z
+
+if delta == 0:
+    print("1 intersection point:")
+    x1 = -y / (2 * x)
+    print("(%.3f, %.3f, %.3f)" % (Xp + x1 * Xv, Yp + x1 * Yv, Zp + x1 * Zv))
+    
+elif delta < 0:
+	print("No intersection point.")

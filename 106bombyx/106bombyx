@@ -1,0 +1,97 @@
+#!/usr/bin/env python3
+
+##
+## EPITECH PROJECT, 2022
+## B-MAT-200-PAR-2-2-106bombyx-guillaume.houriez
+## File description:
+## 106bombyx
+##
+
+import sys
+
+from math import sin, cos, pi, sqrt, tan, radians
+
+def helper():
+	print("USAGE")
+	print("	./106bombyx n [k | i0 i1]")
+	print()
+	print("DESCRIPTION")
+	print("	n	number of first generation individuals")
+	print("	k	growth rate from 1 to 4	")
+	print("	i0	initial generation (included)")
+	print("	i1	final generation (included)")
+
+def error(argv):
+    a = 0
+    b = 0
+    if len(argv) == 1:
+        exit(84)
+    if len(argv) == 2 and argv[1] == '-h':
+        helper()
+        exit(0)
+    if len(argv) == 3:
+        try:
+            int(argv[1])
+            float(argv[2])
+        except ValueError:
+            sys.exit(84)
+        if a == 2:
+            b = int(argv[2])
+        else:
+            b = float(argv[2])
+        if b < 1 or b > 4:
+            sys.exit(84)
+        if int(argv[1]) < 0:
+            sys.exit(84)
+    else:
+        try:
+            int(argv[1])
+            int(argv[2])
+            int(argv[3])
+        except ValueError:
+            sys.exit(84)
+        if int(argv[1]) < 0 or int(argv[3]) <= 0 or int(argv[2]) < 0:
+            sys.exit(84)
+        if int(argv[2]) > int(argv[3]):
+            sys.exit(84)
+    return (b)
+
+def quer(argv):
+    ar = int(argv[1])
+    i0 = int(argv[2])
+    i1 = int(argv[3])
+    memor = ar
+    k = 1
+    i = 1
+    while k <= 4:
+        while i < i0:
+            ar = k * ar * (1000 - ar) / 1000
+            i += 1
+            if ar < 0:
+                ar = 0
+        while i <= i1:
+            print("%.2f %.2f" % (k, ar))
+            ar = k * ar * (1000 - ar) / 1000
+            i += 1
+            if ar < 0:
+                ar = 0
+        k += 0.01
+        i = 1
+        ar = memor
+
+def sup(k, argv):
+    i = 1
+    ar = int(argv[1])
+    while i <= 100:
+        print("%i %.2f" % (i, ar))
+        ar = k * ar * (1000 - ar) / 1000
+        if ar < 0:
+            ar = 0
+        i = i + 1
+
+if __name__=='__main__':
+    k = error(sys.argv)
+    if len(sys.argv) == 3:
+        sup(k, sys.argv)
+    else:
+        quer(sys.argv)

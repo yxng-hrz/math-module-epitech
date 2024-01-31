@@ -1,0 +1,135 @@
+#!/usr/bin/python3
+
+import sys
+import math
+import re
+
+def h_print():
+    print("USAGE")
+    print("    ./103cipher message key flag\n")
+    print("DESCRIPTION")
+    print("    message    a message, made of ASCII characters")
+    print("    key    the encryption key, made of ASCII characters")
+    print("    flag    0 for the message to be encrypted, 1 to be decrypted")
+
+def h_error():
+    if (sys.argv[1]) == '-h':
+        h_print()
+    if (len(sys.argv) != 4):
+        exit(84)
+
+def result1(fl, encrypt, key):
+    if fl == 0:
+        print("Key matrix:")
+        for a in range(len(key)):
+            for b in range(len(key[0])):
+                if b == len(key[0]) - 1:
+                    print(key[a][b])
+                else:
+                    print(key[a][b], end='\t')
+        print("\nEncrypted message:")
+        for l in encrypt:
+            for valeur in l:
+                if valeur == encrypt[-1][-1]:
+                    print(valeur, end='')
+                else:
+                    print(valeur, "", end='')
+
+def result2(fl, encrypt, key):
+    if fl == 1:
+        print("Key matrix:")
+        for a in range(len(key)):
+            for b in range(len(key[0])):
+                if b == len(key[0]) - 1:
+                    print(format(key[a][b]))
+                else:
+                    print(format(key[a][b]), end='\t')
+        print("\nDecrypted message:")
+        for l in encrypt:
+            for valeur in l:
+                if valeur == encrypt[-1][-1]:
+                    print(chr(valeur), end='')
+                else:
+                    print(chr(valeur), end='')
+                    
+def printer(message, a):
+    if ord(message[a]) < 177:
+        return (a)
+    else:
+        return printer(message, a + 1)
+                 
+def matrice_key(key):
+    k = 0
+    x = 0
+    y = 0
+    taille_matrice = math.ceil(math.sqrt(len(key)))
+    matr = [[0 for a in range(taille_matrice)] for b in range(taille_matrice)]
+    for l in matr:
+        y = 0
+        for valeur in l:
+            if k < len(key):
+                matr[x][y] = ord(key[k]);
+            k += 1
+            y += 1
+        x += 1
+    return (matr)
+
+def matrice_message(message, taille_matrice):
+    a = 0
+    x = 0
+    y = 0
+    grandeur_matr = math.ceil(len(message) / taille_matrice) + 1
+    matrice_mess = [[0 for a in range(taille_matrice)] for b in range(grandeur_matr - 1)]
+    for l in matrice_mess:
+        y = 0
+        for valeur in l:
+            if a < len(message):
+                a = printer(message, a)
+                matrice_mess[x][y] = ord(message[a])
+            a += 1
+            y += 1
+        x += 1
+    return (matrice_mess)
+
+def mult(matrice, matrice2, current_line, colonne):
+    res = 0
+    pos = 0
+    this_line = 0
+    matrix1_row = matrice[current_line]
+    matrix2_col = [0 for a in range(len(matrice[0]))]
+    for l in matrice2:
+        matrix2_col[pos] = matrice2[this_line][colonne]
+        pos += 1
+        this_line += 1
+    for x in range(len(matrice[0])):
+        res += round(float(matrix1_row[x]) * matrix2_col[x])
+    return (res)
+
+def matrice_mult(matrice, matrice2):
+    ligne = 0
+    colonne = 0
+    matrice_height = len(matrice)
+    matrice_width = len(matrice[0])
+    ret = [[0 for a in range(matrice_width)] for b in range(matrice_height)]
+    for l in ret:
+        colonne = 0
+        for valeur in l:
+            ret[ligne][colonne] = mult(matrice, matrice2, ligne, colonne)
+            colonne += 1
+        ligne += 1 
+    return (ret)
+
+def main():
+    h_error()
+    message = sys.argv[1]
+    key = sys.argv[2]
+    fl = int(sys.argv[3])
+    if fl == 0:
+        key = matrice_key(key)
+        matrice_mess = matrice_message(message, len(key[0]))
+        encrypted = matrice_mult(matrice_mess, key)
+        result1(fl, encrypted, key)
+        result2(fl, encrypted, key)
+    print("")
+if __name__ == "__main__":
+    main()

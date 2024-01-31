@@ -1,0 +1,144 @@
+#!/usr/bin/env python3
+
+import sys
+from math import *
+
+def mat(n):
+    mat = [[0 for j in range(n)] for i in range(n)]
+    for i in range(n):
+        mat[i][i] = 1
+    return mat
+
+def mat_crea(n, k):
+    mat = [[k for j in range(n)] for i in range(n)]
+    return mat
+
+def mat_mult(mat1, mat2):
+    n = len(mat1)
+    m = len(mat2[0])
+    res = [[0 for j in range(m)] for i in range(n)]
+    for i in range(n):
+        for j in range(m):
+            for k in range(len(mat2)):
+                res[i][j] += mat1[i][k] * mat2[k][j]
+    return res
+
+def mat_carre(mat1, n):
+    tab = mat1
+    for x in range(n - 1):
+        tab = mat_mult(tab, mat1)
+    return tab
+
+def div_mat(mat1, k):
+    for x in range(len(mat1)):
+        for y in range(len(mat1[0])):
+            mat1[x][y] = mat1[x][y] / k
+    return mat1
+
+def add_mat(mat1, mat2):
+    tab = []
+    for x in range(len(mat1)):
+        tab2 = []
+        for y in range(len(mat1[0])):
+            tab2.append(mat1[x][y] + mat2[x][y])
+        tab.append(tab2)
+    return tab
+
+def sub_mat(mat1, mat2):
+    tab = []
+    for x in range(len(mat1)):
+        tab2 = []
+        for y in range(len(mat1[0])):
+            tab2.append(mat1[x][y] - mat2[x][y])
+        tab.append(tab2)
+    return tab
+
+def exp(tab):
+    tmp = mat(len(tab))
+    for x in range(1, 18):
+        tmp = add_mat(tmp, div_mat(mat_carre(tab, x), factorial(x)))
+    return tmp
+
+def cos(tab):
+    tmp = mat(len(tab))
+    for x in range(1, 17):
+        if x % 2 == 0:
+            tmp = add_mat(tmp, div_mat(mat_carre(tab, 2 * x), factorial(2 * x)))
+        else:
+            tmp = sub_mat(tmp, div_mat(mat_carre(tab, 2 * x), factorial(2 * x)))
+    return tmp
+
+def sin(tab):
+    tmp = tab
+    for x in range(1, 17):
+        if x % 2 == 0:
+            tmp = add_mat(tmp, div_mat(mat_carre(tab, 2 * x + 1), factorial(2 * x + 1)))
+        else:
+            tmp = sub_mat(tmp, div_mat(mat_carre(tab, 2 * x + 1), factorial(2 * x + 1)))
+    return tmp
+
+def cosh(tab):
+    tmp = mat(len(tab))
+    for x in range(1, 17):
+        tmp = add_mat(tmp, div_mat(mat_carre(tab, 2 * x), factorial(2 * x)))
+    return tmp
+
+def sinh(tab):
+    tmp = tab
+    for x in range(1, 17):
+        tmp = add_mat(tmp, div_mat(mat_carre(tab, 2 * x + 1), factorial(2 * x + 1)))
+    return tmp
+
+def usage():
+    print("USAGE")
+    print("    ./108trigo fun a0 a1 a2 ...\n")
+    print("DESCRIPTION\n")
+    print('    fun    function to be applied, among at least "EXP", "COS", \
+"SIN", "COSH"')
+    print('           and "SINH"\n')
+    print("    ai     coeficients of the matrix")
+    sys.exit(0)
+
+def verif_argu():
+    if len(sys.argv) == 2 and sys.argv[1] == '-h':
+        usage()
+    try:
+        for x in range(2, len(sys.argv)):
+            sys.argv[x] = float(sys.argv[x])
+    except ValueError:
+        print((x, sys.argv[x]), file=sys.stderr)
+
+def print_prog(tab):
+    args = ["EXP", "COS", "SIN", "COSH", "SINH"]
+    tab_fc = [exp, cos, sin, cosh, sinh]
+    for x in range(len(tab_fc)):
+        if sys.argv[1] == args[x]:
+            tab = tab_fc[x](tab)
+    return tab
+
+def matrice_help(tab):
+    for x in range(len(tab)):
+        for y in range (len(tab[x])):
+            print("%.2f%c" % (tab[x][y], "\t" if (y != len(tab[x]) - 1) else "\n"), end="")
+
+def error_hand():
+    x = len(sys.argv) - 2
+    y = trunc(sqrt(x))
+    if trunc(sqrt(x)) ** 2 != x:
+        sys.exit(84)
+    return y
+
+def main():
+    verif_argu()
+    tab = []
+    x = error_hand()
+    for y in range(int(x)):
+        tab.append([])
+        for z in range (int(x)):
+            tab[y].append(sys.argv[y * int(x) + z + 2])
+    tab = print_prog(tab)
+    matrice_help(tab)
+
+if __name__ == '__main__':
+    main()
+    sys.exit(0)

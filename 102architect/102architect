@@ -1,0 +1,126 @@
+#!/usr/bin/python3
+
+import sys
+import math
+
+def texte():
+    print("USAGE")
+    
+    print("\t./102architect x y transfo1 arg11 [arg12] [transfo2 arg12 [arg22]] ...")
+    
+    print("")
+    
+    print("DESCRIPTION")
+    
+    print("\tx\tabscissa of the original point")
+    
+    print("\ty\tordinate of the original point")
+    
+    print("")
+    
+    print("\ttransfo arg1 [arg2]")
+    
+    print("\t-t i j\ttranslation along vector (i, j)")
+    
+    print("\t-z m n\tscaling by factors m (x-axis) and n (y-axis)")
+    
+    print("\t-r d\trotation centered in 0 by a d degree angle")
+    
+    print("\t-s d\treflection over the axis passing through 0 with an inclination")
+    
+    print("\t\tangle of d degrees")
+
+def reflection(av, z, matrix_rate):
+    a = z + 1
+    arg = av[a]
+    print("Reflection over an axis with an inclination angle of " + arg + " degrees")
+    matrix_rate[0] = float(arg) * matrix_rate[0]
+    matrix_rate[4] = float(arg) * matrix_rate[4]
+    return (matrix_rate)
+
+def rotation(av, z, matrix_rate):
+    a = z + 1
+    arg1 = av[a]
+    print("Rotation by a " + arg1+ " degree angle")
+    matrix_rate[0] = math.cos(float(arg1))
+    matrix_rate[1] = math.sin(float(arg1))
+    matrix_rate[3] = math.sin(float(arg1)) * -1.00
+    matrix_rate[4] = math.cos(float(arg1))
+    return (matrix_rate)
+
+def scale(av, z, matrix_rate):
+    a = z + 1
+    b = z + 2
+    arg1= av[a]
+    arg2 = av[b]
+    print("Scaling by factors " + arg1 + " and " + arg2)
+    matrix_rate[0] = float(arg1) * matrix_rate[0]
+    matrix_rate[4] = float(arg2) * matrix_rate[4]
+    matrix_rate[9] = float(arg1) * matrix_rate[9]
+    matrix_rate[10] = float(arg2) * matrix_rate[10]
+    return (matrix_rate)
+
+def switch(av, z, matrix_rate):
+    a = z + 1
+    b = z + 2
+    arg1 = av[a]
+    arg2 = av[b]
+    z = matrix_rate[9]
+    y = matrix_rate[10]
+    print("Translation along vector (" + arg1+ ", " + arg2 + ")")
+    matrix_rate[2] = float(arg1) + z
+    matrix_rate[5] = float(arg1) + y
+    matrix_rate[9] = float(arg1) + z
+    matrix_rate[10] = float(arg2) + y
+    return (matrix_rate)
+
+def matrix(av, f):
+    try :
+        arg1 = av[1]
+        arg2 = av[2]
+        z = 3
+        f -= 3
+        matrix_rate = [1.00, 0.00, 0.00, 0.00, 1.00, 0.00, 0.00, 0.00, 1.00, float(arg1), float(arg2)]
+        while (f > 0):
+            if (av[z] == "-t"):
+                matrix_rate = switch(av, z, matrix_rate)
+                z += 3
+                f -= 3
+            else:
+                if (av[z] == "-r"):
+                    matrix_rate = rotation(av, z, matrix_rate)
+                    z += 2
+                    f -= 2
+                else:
+                    if (av[z] == "-z"):
+                        matrix_rate = scale(av, z, matrix_rate)
+                        z += 3
+                        f -= 3
+                    else:
+                        if (av[z] == "-s"):
+                            matrix_rate = scale(av, z, matrix_rate)
+                            z += 2
+                            f -= 2
+                        else:
+                            exit (84)
+        print("%.2f" % matrix_rate[0] , "\t" , "%.2f" % matrix_rate[1] , "\t" , "%.2f" % matrix_rate[2], sep ='')
+        print("%.2f" % matrix_rate[3] , "\t" , "%.2f" % matrix_rate[4] , "\t" , "%.2f" % matrix_rate[5], sep ='')
+        print("%.2f" % matrix_rate[6] , "\t" , "%.2f" % matrix_rate[7] , "\t" , "%.2f" % matrix_rate[8], sep ='')
+        print("(", "%.2f" % float(arg1), ", ", "%.2f" % float(arg2), ") => (", "%.2f" % matrix_rate[9], ", ", "%.2f" % matrix_rate[10], ")", sep ='')
+    except :
+        exit(84)
+
+
+def main():
+    try :
+        av = sys.argv
+        f = len(sys.argv)
+        if (av[1] == "-h"):
+            texte()
+        else:
+            if (f > 2):
+                matrix(av, f)
+            else:
+                exit(84)
+    except :
+        exit(84)

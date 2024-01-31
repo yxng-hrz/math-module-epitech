@@ -1,0 +1,94 @@
+#!/usr/bin/env python3
+
+import numpy as np
+import sys
+
+def usage():
+    print("USAGE")
+    print("\t./110borwein n")
+    print("")
+    print("DESCRIPTION")
+    print("\tn constant defining the integral to be computed")
+
+def write_simp(res1, res2, r, array):
+    print(array)
+    print(f"I{r} = {res1:.10f}")
+    print(f"diff = {res2:.10f}")
+    if array != "Simpson:":
+        print("")
+
+def prog(r, p):
+    sorting = 1.0
+    coef = 0
+    if p == 0:
+        return 1
+    while (coef <= r):
+        sorting = sorting * (np.sin(p/((2*coef)+1)) / (p/((2*coef)+1)))
+        coef += 1
+    return (sorting)
+
+def midpoint(r):
+    sorting1 = 0
+    sorting = 0
+    a = 0
+    b = 0.5
+    for z in range(10000):
+        sorting1 = prog(r, (a+b)/2)
+        sorting1 *= b-a
+        sorting += sorting1
+        a+=0.5
+        b+=0.5
+    diff = abs(sorting-np.pi/2)
+    write_simp(sorting, diff, r, "Midpoint:")
+
+def trapezoidal(r):
+    r1 = 0
+    r2 = 0
+    tab_n = []
+    tab_i = []
+    for z in range(1, 10000):
+        r1 = r1+ prog(r, z *0.5)
+        r2 = ((r1*2)+ prog(r, 0)+ prog(r, 5000))*1/4
+        tab_i.append(z)
+        tab_n.append(r2)
+    sorting = ((r1*2)+ prog(r, 0)+ prog(r, 5000))*1/4
+    diff = abs(sorting-np.pi/2)
+    write_simp(sorting, diff, r, "Trapezoidal:")
+
+def simpson(r):
+    r1 = 0
+    r2 = 0
+    z = 1
+    for z in range(1, 10000):
+        r1 = r1+ prog(r, z * 0.5)
+    for z in range(10000):
+        r2 = r2+ prog(r, (z * 0.5)+ 0.25)
+    sorting = ((r1*2)+(r2*4)+ prog(r, 0)+ prog(r, 5000))*0.08333333333333333333333333333333
+    diff = abs(sorting-np.pi/2)
+    write_simp(sorting, diff, r, "Simpson:")
+
+def handling():
+    if len(sys.argv) == 2 and sys.argv[1] == '-h':
+        usage()
+        exit(84)
+    if len(sys.argv) == 2:
+        if sys.argv[1] == "-h":
+            usage()
+            exit(0)
+        try:
+            r = int(sys.argv[1])
+        except ValueError:
+            exit (84)
+    if not(r >= 0 and r <= 5000):
+        exit(84)
+
+
+def main():
+    handling()
+    r = int(sys.argv[1])
+    midpoint(r)
+    trapezoidal(r)
+    simpson(r)
+
+if __name__ == "__main__":
+    main()

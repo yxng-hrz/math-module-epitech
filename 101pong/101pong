@@ -1,0 +1,53 @@
+#!/usr/bin/python3
+
+import sys
+import math 
+from math import acos, sqrt, atan, pow, degrees, fabs
+
+if len(sys.argv) != 8:
+    print ("ERROR")
+    exit (84)
+    
+try :     
+    x0 = float(sys.argv[1])
+    y0 = float(sys.argv[2])
+    z0 = float(sys.argv[3])
+    x1 = float(sys.argv[4])
+    y1 = float(sys.argv[5])
+    z1 = float(sys.argv[6])
+    n  = int(sys.argv[7])
+
+    if (int(sys.argv[7]) < 0):
+        sys.exit()
+except:
+    print ("ERROR")
+    exit(84)
+    
+veloc_z = float(sys.argv[6]) - float(sys.argv[3])
+veloc_y = float(sys.argv[5]) - float(sys.argv[2])
+veloc_x = float(sys.argv[4]) - float(sys.argv[1])
+coordi_x = veloc_x * n + float(sys.argv[4])
+coordi_z = veloc_z * n + float(sys.argv[6])
+coordi_y = veloc_y * n + float(sys.argv[5])
+veloc = sqrt(pow(veloc_x, 2) + pow(veloc_z, 2) + pow(veloc_y, 2))
+coordi_x = (veloc_x * n) + x1
+coordi_y = (veloc_y * n) + y1
+coordi_z = (veloc_z * n) + z1
+
+if (veloc == 0):
+    concrete_v = 0
+    degre_r = math.asin(math.sqrt(veloc_z)/concrete_v)
+    angle = math.degrees(degre_r)
+else :
+    angle = abs(90 - degrees(acos(veloc_z / veloc)))
+print ("The velocity vector of the ball is:")
+print ("(%.2f, %.2f, %.2f)" %(veloc_x, veloc_y, veloc_z))
+print ("At time t + ", n,", ball coordinates will be:")
+print ("(%.2f, %.2f, %.2f)" % (coordi_x, coordi_y, coordi_z))
+
+if (z1 < 0 and veloc_z >= 0) or (z1 >= 0 and veloc_z < 0):
+    print ("The incidence angle is:")
+    print ("%.2f" % angle, "degrees")
+else:
+    print ("The ball won't reach the paddle.")
+exit(0)
