@@ -1,0 +1,177 @@
+#!/usr/bin/env python3
+
+import sys
+
+distribution_table = [[0, 99, 90, 80, 70, 60, 50, 40, 30, 20, 10, 5, 3, 1],
+                      [1, 0.00, 0.02, 0.06, 0.15, 0.27, 0.45, 0.71, 1.07, 1.64, 2.71, 3.84, 5.41, 6.63],
+                      [2, 0.02, 0.21, 0.45, 0.71, 1.02, 1.39, 1.83, 2.41, 3.22, 4.61, 5.99, 7.82, 9.21],
+                      [3, 0.11, 0.58, 1.01, 1.42, 1.87, 2.37, 2.95, 3.66, 4.64, 6.25, 7.81, 9.84, 11.34],
+                      [4, 0.30, 1.06, 1.65, 2.19, 2.75, 3.36, 4.04, 4.88, 5.99, 7.78, 9.49, 9.84, 11.34],
+                      [5, 0.55, 1.61, 2.34, 3.00, 3.66, 4.35, 5.13, 6.06, 7.29, 9.24, 11.07, 11.67, 13.28],
+                      [6, 0.7, 2.20, 3.07, 3.83, 4.57, 5.35, 6.21, 7.23, 8.56, 10.64, 12.59, 15.03, 16.81],
+                      [7, 1.24, 2.83, 3.82, 4.67, 5.49, 6.35, 7.28, 8.38, 9.80, 12.02, 14.07, 16.62, 18.48],
+                      [8, 1.65, 3.49, 4.59, 5.53, 6.42, 7.34, 8.35, 9.52, 11.03, 13.36, 15.51, 18.17, 20.09],
+                      [9, 2.09, 4.17, 5.38, 6.39, 7.63, 8.34, 9.41, 10.66, 12.24, 14.68, 16.92, 19.68, 21.67],
+                      [10, 2.56, 4.87, 6.18, 7.27, 8.30, 9.34, 10.47, 11.78, 13.44, 15.99, 18.31, 21.16, 23.21]]
+
+class StatisticsCalculator:
+    def __init__(self):
+        self.arguments = []
+
+    def parse_arguments(self):
+        args = []
+        try:
+            args = [int(arg) for arg in sys.argv[1:]]
+        except ValueError:
+            sys.exit(84)
+        if len(args) != 9 or sum(args) != 100 or any(arg < 0 for arg in args):
+            sys.exit(84)
+        return args
+
+    def calculate_factorial(self, limit):
+        result = 1
+        i = 1
+        while i <= limit:
+            result *= i
+            i += 1
+        return result
+
+    def calculate_squared(self, observed, theoretical):
+        result = 0
+        i = 0
+        while i < len(observed):
+            result += ((observed[i] - theoretical[i]) ** 2) / theoretical[i]
+            i += 1
+        return result
+
+    def calculate_combinations(self, n, k):
+        result = 1
+        i = 1
+        while i <= min(k - n, n):
+            result *= k - i + 1
+            result //= i
+            i += 1
+        return result
+
+    def calculate_probability(self, value):
+        total = 0
+        i = 0
+        while i < len(value):
+            total += i * value[i]
+            i += 1
+        result = total / (100 * 100)
+        return result
+
+    def validate_fit(self, sum_value, degree):
+        maximum = None
+        minimum = None
+        i = 1
+        while i < 13:
+            if distribution_table[degree][i] <= sum_value <= distribution_table[degree][i + 1]:
+                maximum = distribution_table[0][i]
+                minimum = distribution_table[0][i + 1]
+                break
+            i += 1
+        if maximum is None and minimum is None:
+            if distribution_table[degree][1] <= sum_value:
+                maximum = distribution_table[0][13]
+                return 'P < {}%'.format(maximum)
+            if distribution_table[degree][13] >= sum_value:
+                maximum = distribution_table[0][1]
+                return 'P > {}%'.format(maximum)
+        return '{}% < P < {}%'.format(minimum, maximum)
+
+    def process_distribution(self, tab, TX):
+        def update_values(cpt, new_val):
+            tab[cpt] += tab[cpt - 1]
+            tab.pop(cpt - 1)
+            X[cpt - 1] += '-' + str(new_val)
+            TX[cpt] += TX[cpt - 1]
+            TX.pop(cpt - 1)
+        new_val = 0
+        cpt = 0
+        X = []
+        while cpt < len(tab):
+            X.append(str(new_val))
+            if cpt - 1 >= 0 and cpt + 1 < len(tab) and tab[cpt] < 10:
+                if tab[cpt - 1] + tab[cpt] < tab[cpt + 1] + tab[cpt]:
+                    update_values(cpt, new_val)
+                    new_val += 1
+                    X[cpt] = str(new_val)
+                    while tab[cpt - 1] < 10:
+                        update_values(cpt, new_val)
+                        new_val += 1
+                        if new_val < 9:
+                            X.append(str(new_val))
+                        X.pop(cpt)
+                else:
+                    TX[cpt] += TX[cpt + 1]
+                    TX.pop(cpt + 1)
+            cpt += 1
+            new_val += 1
+        return tab, TX, X, cpt, new_val
+
+    def adjust_table(self, n_tab, X, cpt, n_val):
+        if n_tab[-1] < 10:
+            n_tab[cpt - 1] += n_tab[cpt - 2]
+            n_tab.pop(cpt - 2)
+            X[cpt - 2] += '-' + str(n_val - 1)
+            X.pop(cpt - 1)
+            n_val += 1
+            while n_tab[cpt - 2] < 10:
+                n_tab[cpt] += n_tab[cpt - 1]
+                n_tab.pop(cpt - 1)
+                X[cpt - 1] += '-' + str(n_val)
+                n_val += 1
+                X.pop(cpt)
+        return n_tab, X, cpt, n_val
+
+    def print_distribution_table(self, newTab, X, TX, new_val):
+        table = [["   x"] + X + ["Total"]]
+        table.append(["  Ox"] + list(map(str, newTab)) + ["100"])
+        table.append(["  Tx"] + list(map(lambda x: "%.1f" % x, TX)) + ["100"])
+        for row in table:
+            print("\t| ".join(row))
+        return list(newTab)
+
+    def final_print(self, newTab, TX, X, cpt, new_val):
+        newTab, X, cpt, new_val = self.adjust_table(newTab, X, cpt, new_val)
+        newOX = self.print_distribution_table(newTab, X, TX, new_val)
+        return newOX, TX
+
+    def calculate_binomial_distribution(self, tab, binomial):
+        distribution = []
+        cumulative_sum = 0
+        cpt = 0
+        while cpt < len(tab) - 1:
+            result = 100 * self.calculate_combinations(cpt, 100) * pow(binomial, cpt) * pow((1 - binomial),
+                                                                                              100 - cpt)
+            cumulative_sum += result
+            distribution.append(result)
+            cpt += 1
+        distribution.append(100 - cumulative_sum)
+        return distribution
+
+    def display_results(self, newOX, TX):
+        chi_squared = self.calculate_squared(newOX, TX)
+        degrees_of_freedom = len(newOX) - 2
+        fit_validity = self.validate_fit(chi_squared, degrees_of_freedom)
+        print("Chi-squared:\t\t%.3f" % chi_squared)
+        print("Degrees of freedom:\t{}".format(degrees_of_freedom))
+        print("Fit validity:\t\t" + fit_validity)
+        sys.exit(0)
+
+    def main(self):
+        statistics_calculator = StatisticsCalculator()
+        tab = statistics_calculator.parse_arguments()
+        binomial = statistics_calculator.calculate_probability(tab)
+        TX = statistics_calculator.calculate_binomial_distribution(tab, binomial)
+        newTab, TX, X, cpt, new_val = statistics_calculator.process_distribution(tab, TX)
+        newOX, TX = statistics_calculator.final_print(newTab, TX, X, cpt, new_val)
+        print("Distribution:\t\tB(100, %.4f)" % binomial)
+        statistics_calculator.display_results(newOX, TX)
+        return 0
+
+if __name__ == '__main__':
+    statistics_calculator = StatisticsCalculator()
+    statistics_calculator.main()

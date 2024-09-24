@@ -1,0 +1,134 @@
+#!/usr/bin/python3
+
+from operator import add
+from math import sqrt
+import sys
+import argparse
+import csv
+
+def valider(a):
+    digits = str(a)
+    if len(digits) != 3:
+        raise argparse.ArgumentTypeError("Error: %r should have 3 digits"%(digits,))
+    return (digits)
+
+if len(sys.argv) > 1:
+    arg_parser = argparse.ArgumentParser(description='207demography')
+    arg_parser.add_argument('codes', nargs='+', type=valider)
+
+try:
+    parsed_args = arg_parser.parse_args()
+except:
+    sys.exit(84)
+
+intermediate1 = []
+intermediate2 = []
+intermediate3 = []
+dataset = []
+nations = []
+coefficients = []
+
+def total(data):
+    return sum(list(map(int, data)))
+
+def total_product(x_list, y_list):
+    result = (sum(list(map(int, [x_list[i] * y_list[i] for i in range(min(len(x_list), len(y_list)))] + max(x_list, x_list, key=len)[min(len(dataset), len(y_list)):]))))
+    return (result)
+
+def sum_of_squares(items):
+    result = sum(list(map(int, [int(x)**2 for x in items])))
+    return (result)
+
+def square_of_sum(items):
+    result = total(items)**2
+    return (result)
+
+def calculate_slope(values, times):
+    slope = (total(values) * sum_of_squares(times) - total(times) * total_product(values, times)) / (len(times) * sum_of_squares(times) - square_of_sum(times))
+    return (slope)
+
+def calculate_intercept(values, times):
+    intercept = (len(times) * total_product(values, times) - total(values) * total(times)) / (len(times) * sum_of_squares(times) - square_of_sum(times))
+    return (intercept)
+
+def reg_linear(values, times, model_type):
+    slope = calculate_slope(values, times)
+    intercept = calculate_intercept(values, times)
+    if model_type == 1:
+        coefficients.append(slope / 1000000)
+        coefficients.append(intercept / 1000000)
+    if model_type == 2:
+        coefficients.append(slope)
+        coefficients.append(intercept * 1000000)
+
+def erroring(values, times):
+    result = 0
+    for index in range(len(times)):
+        result += (((times[index] * coefficients[1]) + coefficients[0]) - values[index] / 1000000)**2
+    result /= len(times)
+    return sqrt(result)
+
+def compute_premier(times, values):
+    reg_linear(times, values, 1)
+    error = erroring(times, values)
+    intermediate3.append(error)
+    return (error)
+
+def print_premier_results(times, values, error):
+    print("Fit1")
+    if coefficients[0] >= 0:
+        print("\tY = {:.2f} X + {:.2f}".format(coefficients[1], coefficients[0]))
+    else:
+        print("\tY = {:.2f} X - {:.2f}".format(coefficients[1], coefficients[0] * -1))
+    print("\tRoot-mean-square deviation: {:.2f}".format(error))
+    print("\tPopulation in 2050: {:.2f}".format(2050 * coefficients[1] + coefficients[0]))
+    coefficients.clear()
+
+def erroringhelp(values, times):
+    result = 0
+    for index in range(len(times)):
+        result += (((times[index] - coefficients[0]) / coefficients[1]) - values[index] / 1000000)**2
+    result /= len(times)
+    return sqrt(result)
+
+def second(times, values):
+    reg_linear(values, times, 2)
+    error = erroringhelp(times, values)
+    intermediate3.append(error)
+    print("Fit2")
+    if coefficients[0] >= 0:
+        print("\tX = {:.2f} Y + {:.2f}".format(coefficients[1], coefficients[0]))
+    else:
+        print("\tX = {:.2f} Y - {:.2f}".format(coefficients[1], coefficients[0] * -1))
+    print("\tRoot-mean-square deviation: {:.2f}".format(error))
+    print("\tPopulation in 2050: {:.2f}".format((2050 - coefficients[0]) / coefficients[1]))
+    coefficients.clear()
+
+def aggregate(prelim_data1, prelim_data2):
+    record_index = 0
+    while record_index < len(dataset):
+        record = dataset[record_index]
+        code_index = 0
+        while code_index < len(parsed_args.codes):
+            code = parsed_args.codes[code_index]
+            if code == record[1]:
+                nations.append(record[0])
+                if len(prelim_data1) == 0:
+                    prelim_data1.extend(list(map(int, record[2:])))
+                    prelim_data2.extend(list(map(int, dataset[0][2:])))
+                else:
+                    prelim_data1 = list(map(add, prelim_data1, list(map(int, record[2:]))))
+            code_index += 1
+        record_index += 1
+    return (prelim_data1)
+
+with open("207demography_data.csv", newline='') as csvfile:
+    datarr = csv.reader(csvfile, delimiter=';')
+    for row in datarr:
+        dataset.append(row)
+intermediate1 = aggregate(intermediate1, intermediate2)
+error = compute_premier(intermediate1, intermediate2)
+print("Country:", ', '.join(nations))
+print_premier_results(intermediate1, intermediate2, error)
+second(intermediate1, intermediate2)
+print("Correlation coefficient: {:.4f}".format((intermediate3[0] / intermediate3[1])))

@@ -1,0 +1,98 @@
+#!/usr/bin/python3
+
+from sys import argv, exit, stderr
+from math import factorial
+
+def gnome(char: str, mode: int = 0) -> int:
+    try:
+        nbr = int(char)
+    except ValueError:
+        raise Exception("error")
+    if mode == 1:
+        if not 0 < nbr <= 6:
+            raise Exception("error")
+    else:
+        if not 0 <= nbr <= 6:
+            raise Exception("error")
+    return nbr
+
+def nomination(a: int, b: int) -> float:
+    try:
+        result = (factorial(a) / (factorial(b) * factorial(a - b))) * pow((1 / 6), b) * pow((5 / 6), (a - b))
+    except:
+        raise Exception("error \n")
+    return result
+
+def gnome_apparition(nb: int, *args: list[int]) -> int:
+    return args.count(nb)
+
+def gresult(dice: int, number: int, *args: list[int]) -> float:
+    result: float = 0.0
+    apparition: int = gnome_apparition(number, *args)
+    if dice < apparition:
+        result = 1
+    else:
+        for n in range(dice - apparition, 6 - apparition):
+            result += nomination(5 - apparition, n)
+    return result * 100
+
+def gnome_coup(number: int, *args: list[int]) -> float:
+    tab = set()
+    tab.update(args)
+    if len(tab) == 1:
+        tab.add(0)
+    pres = 5 if tab.issuperset([number]) else 6
+    return factorial(pres - int(len(tab))) / pow(6, pres - int(len(tab))) * 100
+
+def gnomeremplie(n1: int, n2: int, *args: list[int]) -> float:
+    result: float = 1.0
+    count1: int = min(3, gnome_apparition(n1, *args))
+    count2: int = min(2, gnome_apparition(n2, *args))
+    for n in range(5 - count1 - count2, 6 - count1 - count2):
+        result *= nomination(5 - count1 - count2, n)
+    return min(0.1, result) * 1000
+
+def compute_result(string: str, *args: list[int]) -> None:
+    arg: list[str] = string.split("_")
+    cbn: str = arg[0]
+    result: float = 0.0
+    if len(arg) == 2:
+        nb: int = gnome(arg[1], 1)
+        print("Chances to get a " + str(nb) + " " + cbn, end="")
+        match cbn:
+            case "three":
+                result = gresult(3, nb, *args)
+                print("-of-a-kind", end="")
+            case "pair":
+                result = gresult(2, nb, *args)
+            case "yams":
+                result = gresult(5, nb, *args)
+            case "four":
+                result = gresult(4, nb, *args)
+                print("-of-a-kind", end="")
+            case "straight":
+                result = gnome_coup(nb, *args)
+        print(f": {result:.2f}%")
+    elif len(arg) == 3:
+        if cbn == "full":
+            nb1: int = gnome(arg[1], 1)
+            nb2: int = gnome(arg[2], 1)
+            res = gnomeremplie(nb1, nb2, *args)
+        else:
+            raise Exception("error \n")
+        print(f"Chances to get a {str(nb1)} full of {str(nb2)}: {res:.2f}%")
+    else:
+        raise Exception("error \n")
+    
+def main() -> None:
+    try:
+        if len(argv) == 7:
+            compute_result(argv[6], *[gnome(argv[x]) for x in range(1, 6)])
+        else:
+            raise Exception("error \n")
+    except Exception as error:
+        stderr.write(str(error))
+        exit(84)
+
+if __name__ == "__main__":
+    main()

@@ -1,0 +1,50 @@
+#!/bin/python3
+
+from sys import argv, exit
+from math import sqrt
+
+def sorte(code: int, msg: str) -> None:
+    exit(code)
+
+def func1(Str: str) -> int:
+    try:
+        return int(Str)
+    except:
+        exit(84)
+
+def func2(Str: str) -> float:
+    try:
+        return float(Str)
+    except:
+        exit(84)
+
+def checker(nb: float, min: float = 0.0, max: float = 100.0) -> float:
+    return max if nb > max else (min if nb < min else nb)
+
+def infer() -> tuple[int, int, float]:
+    if len(argv) != 4:
+        exit(84)
+    abc, strtest, strrs = func1(argv[1]), func1(argv[2]), func2(argv[3])
+    if abc <= 0 or strtest <= 0 or strtest > abc or strrs < 0 or strrs > 100:
+        exit(84)
+    return abc, strtest, strrs
+
+def variable(abc: int, strtest: int, strrs: float) -> float:
+    s = strrs / 100
+    var = ((s * (1 - s)) / strtest) * ((abc - strtest) / (abc - 1))
+    return var
+
+def main():
+    abc, strtest, strrs = infer()
+    var = variable(abc, strtest, strrs)
+    func95 = (2 * 1.96 * sqrt(var)) / 2 * 100
+    func99 = (2 * 2.58 * sqrt(var)) / 2 * 100
+    print("abculation size:\t", abc, sep='')
+    print("Sample size:\t\t", strtest, sep='')
+    print("Voting intentions:\t", "%.2f" % strrs, "%", sep='')
+    print("Variance:\t\t", "%.6f" % var, sep='')
+    print("95%% confidence interval: [%.2f%%; %.2f%%]" % (checker(strrs - func95), checker(strrs + func95)))
+    print("99%% confidence interval: [%.2f%%; %.2f%%]" % (checker(strrs - func99), checker(strrs + func99)))
+
+if __name__ == "__main__":
+    main()

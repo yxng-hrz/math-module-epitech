@@ -1,0 +1,60 @@
+#!/usr/bin/python3
+
+from time import time as Time
+from sys import argv
+from math import factorial, exp
+
+def double(a: int, b: int) -> int:
+    return factorial(a) // (factorial(b) * factorial(a - b))
+
+def db_dis(a: int):
+    func1: float = a / (3600 * 8)
+    func2: float = Time()
+    func3: float = 0
+    print("Binomial distribution:")
+    for c in range(0, 51):
+        if c > 0 and (c % 5) != 0:
+            print(end="\t")
+        result: float = double(3500, c) * (func1**c) * ((1 - func1) ** (3500 - c))
+        print("%d -> %.3f" % (c, result), end="")
+        func3 += result * (c > 25)
+        if (c + 1) % 5 == 0:
+            print(end="\n")
+    func3 = 1 if a > 320 else func3
+    print("\nOverload: %.1f" % (func3 * 100) + "%")
+    print("Computation time: %.2f ms" % ((Time() - func2) * 1000))
+
+def fish(a: int):
+    func1: float = 3500 * (a / (60 * 60 * 8))
+    func2: float = Time()
+    func3: float = 0
+    print("\nPoisson distribution:")
+    for c in range(0, 51):
+        if c > 0 and (c % 5) != 0:
+            print(end="\t")
+        result: float = exp(-func1) * (func1**c) / factorial(c)
+        print("%d -> %.3f" % (c, result), end="")
+        func3 += result * (c > 25)
+        if (c + 1) % 5 == 0:
+            print(end="\n")
+    func3 = 1 if a > 320 else func3
+    print("\nOverload: %.1f" % (func3 * 100) + "%")
+    print("Computation time: %.2f ms" % ((Time() - func2) * 1000))
+
+def main():
+    if len(argv) == 3:
+        print("%d-combinations of a set of size %d:\n%d" % (int(argv[2]), int(argv[1]), double(int(argv[1]), int(argv[2]))))
+    elif len(argv) == 2:
+        if argv[1] == "-h":
+            exit(84)
+        else:
+            db_dis(int(argv[1]))
+            fish(int(argv[1]))
+    else:
+        print("invalid")
+
+if __name__ == "__main__":
+    try:
+        main()
+    except Exception as error:
+        print("Error: " + str(error))
